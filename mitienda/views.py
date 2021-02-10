@@ -3,65 +3,21 @@ from .serializers import  ClientSerializer, BillSerializer, BillProductSerialize
 
 from django.contrib.auth.models import User
 from .models import Bill, Client, Product, BillProduct
-from rest_framework import generics
 
 #NON Abstract API Views
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import authentication, permissions, status
-from django.http import Http404
+from django.http import Http404, HttpResponse
+
+from django.views.generic import TemplateView
+
+from django.views.decorators.csrf import csrf_exempt
+
+from django.utils.decorators import method_decorator
 
 
-
-# ----------------------------------------------------> Clients CRUD
-class GetClients(APIView):
-	def get(self, request, format=None):
-		clients = Client.objects.all()
-		serializer = ClientSerializer(clients, many=True)
-		return Response(serializer.data)
-
-
-	def post(self, request, format=None):
-		serializer = ClientSerializer(data=request.data)
-		if serializer.is_valid():
-			serializer.save()
-			return Response(serializer.data, status=status.HTTP_201_CREATED)
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class GetClientDetail(APIView):
-	
-
-	def get_object(self, pk):
-		try:
-			return Client.objects.get(pk=pk)
-		except Client.DoesNotExist:
-			raise Http404
-
-
-	def get(self, request, pk, format=None):
-		client = self.get_object(pk)
-		serializer = ClientSerializer(client)
-		return Response(serializer.data)
-
-
-	def put(self, request, pk, format=None):
-		client = self.get_object(pk)
-		serializer = ClientSerializer(client, data=request.data)
-		if serializer.is_valid():
-			serializer.save()
-			return Response(serializer.data)
-		return Response(serializer.errors, status=status.HTTP_404_BAD_REQUEST)
-
-
-	def delete(self, request, pk, format=None):
-		client = self.get_object(pk)
-		client.delete()
-		return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# ----------------------------------------------------> Products CRUD
+# ----------------------------------------------------> Products CRUD ORM
 class GetProducts(APIView):
 	def get(self, request, format=None):
 		products = Product.objects.all()
@@ -108,7 +64,60 @@ class GetProductDetail(APIView):
 		return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# ----------------------------------------------------> Bills CRUD
+# ----------------------------------------------------> Clients CRUD RAW
+class GetClients(APIView):
+	def get(self, request, format=None):
+		clients = Client.objects.raw(
+			'''
+			SELECT * FROM mitienda_client
+			'''
+			)
+		serializer = ClientSerializer(clients, many=True)
+		return Response(serializer.data)
+
+
+	def post(self, request, format=None):
+		serializer = ClientSerializer(data=request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetClientDetail(APIView):
+	
+
+	def get_object(self, pk):
+		try:
+			client = Client.objects.get(pk=pk)
+			return client
+		except Client.DoesNotExist:
+			raise Http404
+
+
+	def get(self, request, pk, format=None):
+		client = self.get_object(pk)
+		serializer = ClientSerializer(client)
+		return Response(serializer.data)
+
+
+	def put(self, request, pk, format=None):
+		client = self.get_object(pk)
+		serializer = ClientSerializer(client, data=request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data)
+		return Response(serializer.errors, status=status.HTTP_404_BAD_REQUEST)
+
+
+	def delete(self, request, pk, format=None):
+		client = self.get_object(pk)
+		client.delete()
+		return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+# ----------------------------------------------------> Bills CRUD RAW
 class GetBills(APIView):
 	def get(self, request, format=None):
 		bills = Bill.objects.all()
@@ -155,7 +164,7 @@ class GetBillDetail(APIView):
 		return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# ----------------------------------------------------> BillsProducts CRUD
+# ----------------------------------------------------> BillsProducts CRUD RAW
 class GetBillsProducts(APIView):
 	def get(self, request, format=None):
 		bills_products = BillProduct.objects.all()
@@ -201,4 +210,21 @@ class GetBillsProductsDetail(APIView):
 		bill_product.delete()
 		return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+
+class CreateUser(TemplateView):
+	@method_decorator(csrf_exempt)
+	def dispatch(self, request, *args, **kwargs):
+		return super(CreateUser, self).dispatch(request, *args, **kwargs)
+
+
+	def get(self, request):
+		return render(request, 'mitienda/register.html')
+
+
+	def post(self, request, format=None):
+		username = request.POST.get('username', False)
+		pasword = request.POST.get('password', False)
+
+		return render(request, 'mitienda/register.html')
 

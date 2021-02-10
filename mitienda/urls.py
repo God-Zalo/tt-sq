@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import GetBills, GetBillDetail, GetClients, GetProducts, GetProductDetail, GetBillsProducts, GetBillsProductsDetail, GetClientDetail#, RegisterClient
+from .views import GetBills, GetBillDetail, GetClients, GetProducts, GetProductDetail, GetBillsProducts, GetBillsProductsDetail, GetClientDetail, CreateUser
 from mitienda import views
 
 urlpatterns = [
@@ -8,7 +8,8 @@ urlpatterns = [
 
 	path ('clients/', GetClients.as_view(), name='list-clients'),
 	path ('clients/<int:pk>/', GetClientDetail.as_view(), name='detail-client'),
-#	path ('register/', views.RegisterClient, name='register-client'),
+
+	path ('register/', CreateUser.as_view(), name='register-client'),
 
 	path ('products/', GetProducts.as_view(), name='list-products'),
 	path ('products/<int:pk>/', GetProductDetail.as_view(), name='detail-product'),
