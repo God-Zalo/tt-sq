@@ -28,3 +28,7 @@ class Product(models.Model):
 
 	def __str__(self):
 		return self.name
+
+class BillProduct(models.Model):
+	bill_id = models.ForeignKey(Bill, on_delete=models.PROTECT)
+	product_id = models.ManyToManyField(Product)
