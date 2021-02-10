@@ -13,13 +13,14 @@ class Client(models.Model):
 
 
 class Bill(models.Model):
+	id = models.AutoField(primary_key=True)
 	client_id = models.ForeignKey(Client, on_delete=models.PROTECT)
 	company_name = models.CharField(max_length=100)
 	nit = models.CharField(max_length=100)
 	code = models.CharField(max_length=100)
 
 	def __str__(self):
-		return self.code + ' ' + self.company_name
+		return str(self.id)
 
 
 class Product(models.Model):
@@ -32,3 +33,6 @@ class Product(models.Model):
 class BillProduct(models.Model):
 	bill_id = models.ForeignKey(Bill, on_delete=models.PROTECT)
 	product_id = models.ManyToManyField(Product)
+
+	def __str__(self):
+		return str(self.bill_id)
