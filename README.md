@@ -2,6 +2,10 @@
 
 ## Features
 
-- [x] ALL
+- [ ] ALL
 
 ## How to replicate / consume endpoints
+
+- Clone
+- Migrate db
+- Runserver
